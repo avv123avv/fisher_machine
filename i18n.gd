@@ -18,8 +18,10 @@ const EN := {
 	"Перемешать": "Shake up",
 	"Сброс": "Reset",
 	"Инструкция": "Manual",
-	"Клавиатура: Tab/стрелки, Enter — нажать, Пробел — пауза, S — перемешать, [ ] — скорость, R — сброс, L — язык.":
-		"Keyboard: Tab/arrows, Enter — press, Space — pause, S — shake up, [ ] — speed, R — reset, L — language.",
+	"Клавиатура: Tab/стрелки, Enter — нажать, Пробел — пауза, S — перемешать, [ ] — скорость, V — схема, R — сброс, L — язык.":
+		"Keyboard: Tab/arrows, Enter — press, Space — pause, S — shake up, [ ] — speed, V — scheme, R — reset, L — language.",
+	"Схема сборки": "Build scheme",
+	"Схема машины": "Machine scheme",
 	"F1 / Y — инструкция: как устроена машина, формулы, задачи": "F1 / Y — manual: how the machine works, formulas, problems",
 	# fisher_machine.gd — панель
 	"Рычаги": "Levers",
@@ -52,6 +54,23 @@ const EN := {
 	"равновесие: все уровни": "equilibrium: all levels",
 	"  совпадают с водой бака": "  match the tub water",
 	"Неравновесие: %.3f": "Imbalance: %.3f",
+	# diy_rig.gd — домашний стенд
+	"товар %s: %.0f мл": "good %s: %.0f ml",
+	"Высота края, см": "Rim height, cm",
+	"#Детали стенда": "#Rig parts",
+	"1  Щит 100 × 80 см": "1  Board 100 × 80 cm",
+	"2  Ёмкость по таблице — 9": "2  Container per table — 9",
+	"3  Рейка с бегунком — 9": "3  Rail with slider — 9",
+	"4  Зажим на бегунке — 9": "4  Clamp on slider — 9",
+	"5  Трубка 6 мм + тройники — 3": "5  6 mm tube + tees — 3",
+	"6  Кран для заливки — 3": "6  Filling valve — 3",
+	"7  Нулевая линия: нить": "7  Zero line: a thread",
+	"   или лазерный уровень": "   or a laser level",
+	"#Масштаб": "#Scale",
+	"1 ед. товара = %.0f мл": "1 unit of good = %.0f ml",
+	"1 ед. полезности = 1 см": "1 utility unit = 1 cm",
+	"Неравновесие: %.1f мм": "Imbalance: %.1f mm",
+	"F1 — сборка и опыты": "F1 — assembly and experiments",
 	# price_chart.gd
 	"Цены во времени (пунктир — равновесие)": "Prices over time (dashed — equilibrium)",
 	"последние %.0f с": "last %.0f s",
