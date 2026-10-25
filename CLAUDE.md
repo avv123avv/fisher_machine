@@ -25,12 +25,20 @@ conventions, layout, i18n, tests, CI/release and manual pipeline; copy from ther
   cisterns at fixed columns moving only vertically (rim at `height(i, j)` above the tub line), back compartment drawn to
   the right with width ∝ price, consumer rod through the rims, hoses (goods by column, money by row), price lever with
   pins at distance a_j from float F, "how to read" notes. Good colours `COL_GOOD` are shared with the chart.
+- `diy_rig.gd` (`class_name DiyRigView`) — "Build scheme" view (menu `view`, V / L3, launch arg `-- --view=diy`), shown
+  instead of `CisternView`: a home rig of communicating vessels — 9 containers on rails with sliders grouped by good,
+  bottoms joined per good, zero line = tub water; the program replaces Fisher's levers/bellows by giving rim heights
+  `height(i, j)` in cm. Constants `ML_PER_UNIT` 10, `THICK_CM` 5, `WIDTH_CM_PER_W` 2 (so 1 cm of depth = w units),
+  `TUBE_D_MM`, `TUBE_LEN_CM`; static `box_cm`, `volume_ml`, `rim_cm`, `tube_dead_ml` — mirrored in
+  `docs/build_instruction.py` (section 8, `diy_section()`, rims = λ_i·p_j). Part numbers 1–7 on the drawing = parts
+  table in the manual. Screenshot `docs/diy_<lang>.png` (`--view=diy`).
 - `price_chart.gd` (`class_name PriceChart`) — p_A, p_B, p_C over time + dashed `target`.
 - `help_overlay.gd` — F1 / Y manual pages (same as phillips_machine).
 - `docs/build_instruction.py` → `docs/instruction_{ru,en}.pdf` + `docs/pages/<lang>/page_N.png` (1054 px). `L(ru, en)`
   pairs, `FONT_K` 1.4. Numbers come from `equilibrium()` there — a Python copy of `FisherModel.demand/solve_prices`
   with the same defaults (`W0`, `D0`, `Y0`, `E0`); keep in sync. Sections: history, cistern = taste, how it works,
-  Fisher's equations, controls, exercises, 5 problems (one page each via `problem()` — check the PNGs fit).
+  Fisher's equations, controls, exercises, 5 problems (one page each via `problem()` — check the PNGs fit), section 8
+  building at home.
   Screenshots `docs/screen_<lang>.png`: `godot --path . --write-movie x.png --fixed-fps 10 --quit-after 200 -- --lang=en`,
   last frame. Rerun the script after changing defaults or the screen, then `godot --headless --path . --import`.
 
@@ -52,11 +60,13 @@ conventions, layout, i18n, tests, CI/release and manual pipeline; copy from ther
 ## Controls
 Focus navigation (D-pad / left stick / arrows / Tab), ←/→ on a slider = 1/40 of its range, A/Enter presses.
 Actions in `_setup_input()`: `toggle_pause` (X, Space — in `_input` before the GUI), `toggle_help` (Y, F1),
-`shake` (Start, S), `toggle_lang` (Select, L), `speed_down`/`speed_up` (LB/RB, [ ]), `reset_sim` (R), `open_pdf` (O).
+`shake` (Start, S), `toggle_lang` (Select, L), `speed_down`/`speed_up` (LB/RB, [ ]), `reset_sim` (R), `open_pdf` (O),
+`toggle_view` (L3, V).
 
 ## Tests
 `tests/run_tests.gd` — model (conservation, convergence, machine = direct solution, budgets, MU ∝ price, Fisher's
-exercises), UI (presets, sliders, shake, pause, language), manual pages/PDFs, translations.
+exercises), build scheme conversions and view toggle, UI (presets, sliders, shake, pause, language), manual pages/PDFs,
+translations.
 `godot --headless --path . --import` then `godot --headless --path . -s tests/run_tests.gd` (exit 0 = pass).
 Godot here: `C:/Users/avv12/Downloads/Godot_v4.7.1-stable_win64.exe/Godot_v4.7.1-stable_win64_console.exe`.
 
@@ -72,4 +82,3 @@ merged PR bumps `vX.Y.Z` by label and publishes `FisherMachine.exe` + both PDFs 
 ## Possible next steps
 - Non-rectangular cisterns (other utility functions) and editing cistern shapes in the UI.
 - An example with multiple equilibria (Brainard–Scarf found one with quadratic utilities).
-- A home-build scheme, like `diy_rig.gd` in phillips_machine.

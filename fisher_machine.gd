@@ -56,6 +56,7 @@ const MENU := [
 	["faster", "+ скорость"],
 	["shake", "Перемешать"],
 	["reset", "Сброс"],
+	["view", "Схема сборки"],
 	["help", "Инструкция"],
 	["lang", "English"],
 ]
@@ -64,6 +65,7 @@ var model := FisherModel.new()
 var speed := 1.0
 var paused := false
 var view: CisternView
+var diy: DiyRigView     ## домашний стенд из сообщающихся сосудов — вместо view, кнопка «Схема сборки»
 var chart: PriceChart
 var help: HelpOverlay
 var sliders := {}        # ключ → HSlider
@@ -79,6 +81,9 @@ func _ready() -> void:
 	_setup_input()
 	_build_ui()
 	apply_preset("reset")
+	# Аргумент запуска `-- --view=diy` сразу показывает схему сборки (для скриншотов).
+	if "--view=diy" in OS.get_cmdline_user_args():
+		set_diy(true)
 	(sliders["y0"] as Control).grab_focus.call_deferred()
 
 
@@ -91,6 +96,7 @@ func _process(delta: float) -> void:
 		chart.push([model.price(0), model.price(1), model.price(2)])
 	_update_table()
 	view.queue_redraw()
+	diy.queue_redraw()
 	queue_redraw()
 
 
@@ -105,7 +111,7 @@ func _draw() -> void:
 	draw_string(font, Vector2(DIVIDER_X - 324, 40), version if version == "dev" else "v" + version,
 			HORIZONTAL_ALIGNMENT_RIGHT, 300, FS_SMALL, CisternView.DIM)
 	draw_line(Vector2(DIVIDER_X, 16), Vector2(DIVIDER_X, 1064), Color(0.3, 0.32, 0.36), 2.0)
-	draw_string(font, Vector2(24, 1000), I18n.t("Клавиатура: Tab/стрелки, Enter — нажать, Пробел — пауза, S — перемешать, [ ] — скорость, R — сброс, L — язык."),
+	draw_string(font, Vector2(24, 1000), I18n.t("Клавиатура: Tab/стрелки, Enter — нажать, Пробел — пауза, S — перемешать, [ ] — скорость, V — схема, R — сброс, L — язык."),
 			HORIZONTAL_ALIGNMENT_LEFT, DIVIDER_X - 40, FS_SMALL, CisternView.DIM)
 	draw_string(font, Vector2(24, 1056), I18n.t("F1 / Y — инструкция: как устроена машина, формулы, задачи"),
 			HORIZONTAL_ALIGNMENT_LEFT, -1, FS_BIG, COLOR_HEAD)
@@ -137,6 +143,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_press_menu("faster")
 	elif event.is_action_pressed("reset_sim"):
 		_press_menu("reset")
+	elif event.is_action_pressed("toggle_view"):
+		_press_menu("view")
 	else:
 		return
 	get_viewport().set_input_as_handled()
@@ -165,6 +173,12 @@ func set_help(open: bool) -> void:
 		(menu["help"] as Control).grab_focus()
 
 
+func set_diy(show: bool) -> void:
+	diy.visible = show
+	view.visible = not show
+	_refresh_texts()
+
+
 ## Кнопки меню; так же их нажимают горячие клавиши и кнопки геймпада.
 func _press_menu(id: String) -> void:
 	match id:
@@ -179,6 +193,8 @@ func _press_menu(id: String) -> void:
 			chart.clear()
 		"reset":
 			apply_preset("reset")
+		"view":
+			set_diy(not diy.visible)
 		"help":
 			set_help(not help.visible)
 		"lang":
@@ -261,6 +277,7 @@ func _refresh_texts() -> void:
 	pause_btn.set_pressed_no_signal(paused)
 	# Кнопка показывает язык, на который переключит.
 	(menu["lang"] as Button).text = "English" if I18n.current() == "ru" else "Русский"
+	(menu["view"] as Button).text = I18n.t("Схема машины") if diy.visible else I18n.t("Схема сборки")
 	(table[0][4] as Label).text = I18n.t("полезн.")
 	view.queue_redraw()
 	chart.queue_redraw()
@@ -297,7 +314,7 @@ func _build_ui() -> void:
 		# Пауза подсвечивается жёлтой рамкой, пока включена.
 		btn.toggle_mode = d[0] == "pause"
 		btn.pressed.connect(_press_menu.bind(d[0]))
-		if d[0] not in ["pause", "lang"]:
+		if d[0] not in ["pause", "lang", "view"]:
 			_texts.append([btn, d[1]])
 		menu_row.add_child(btn)
 		menu[d[0]] = btn
@@ -307,6 +324,12 @@ func _build_ui() -> void:
 	view.position = VIEW_RECT.position
 	view.size = VIEW_RECT.size
 	add_child(view)
+	diy = DiyRigView.new()
+	diy.model = model
+	diy.position = VIEW_RECT.position
+	diy.size = VIEW_RECT.size
+	diy.visible = false
+	add_child(diy)
 
 	var panel := VBoxContainer.new()
 	panel.position = PANEL_RECT.position
@@ -474,6 +497,7 @@ func _setup_input() -> void:
 	_add_action("speed_up", [_key(KEY_BRACKETRIGHT), _joy(JOY_BUTTON_RIGHT_SHOULDER)])
 	_add_action("reset_sim", [_key(KEY_R)])
 	_add_action("open_pdf", [_key(KEY_O)])
+	_add_action("toggle_view", [_key(KEY_V), _joy(JOY_BUTTON_LEFT_STICK)])
 	# Левый стик для навигации по фокусу (крестовина уже есть в ui_*).
 	_add_action("ui_left", [_axis(JOY_AXIS_LEFT_X, -1.0)])
 	_add_action("ui_right", [_axis(JOY_AXIS_LEFT_X, 1.0)])

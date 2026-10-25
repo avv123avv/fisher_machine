@@ -147,6 +147,18 @@ func _initialize() -> void:
 	_check(main.menu["lang"].text == "English", "смена языка en → ru")
 	_check(InputMap.action_has_event("shake", FisherMachine._joy(JOY_BUTTON_START)), "Start — перемешать")
 
+	print("Схема сборки")
+	_check(DiyRigView.box_cm(4.0, 12.0) == Vector3(8.0, 5.0, 12.0), "ёмкость w=4, d=12 → 8 × 5 × 12 см")
+	var b := DiyRigView.box_cm(3.0, 10.0)
+	_check(is_equal_approx(b.x * b.y, 3.0 * DiyRigView.ML_PER_UNIT), "1 см глубины = w единиц товара (как в модели)")
+	_check(is_equal_approx(DiyRigView.volume_ml(40.0), 400.0), "40 единиц = 400 мл")
+	_check(DiyRigView.tube_dead_ml() > 20.0 and DiyRigView.tube_dead_ml() < 50.0, "мёртвый объём трубок ≈ %.0f мл" % DiyRigView.tube_dead_ml())
+	main._press_menu("view")
+	_check(main.diy.visible and not main.view.visible and main.menu["view"].text == "Схема машины", "кнопка «Схема сборки»")
+	main._unhandled_input(_action("toggle_view"))
+	_check(not main.diy.visible and main.view.visible, "V / L3 — обратно к схеме машины")
+	_check(InputMap.action_has_event("toggle_view", FisherMachine._joy(JOY_BUTTON_LEFT_STICK)), "L3 привязан к схеме")
+
 	print("Инструкция")
 	main._unhandled_input(_action("toggle_help"))
 	_check(main.help.visible, "F1 / Y открывает инструкцию")

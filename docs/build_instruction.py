@@ -543,6 +543,142 @@ def story() -> list:
 			  "A is now spent on them, and there is no more B and C than before."),
 		],
 	)
+	s += diy_section(b, harv)
+	return s
+
+
+# --- Сборка дома (константы — как в diy_rig.gd) -------------------------------
+
+ML_PER_UNIT = 10.0
+THICK_CM = 5.0
+WIDTH_CM_PER_W = ML_PER_UNIT / THICK_CM
+TUBE_D_MM = 6.0
+TUBE_LEN_CM = 120.0
+
+
+def rims(eq: dict) -> list[list[float]]:
+	"""Высоты краёв над нулевой линией, см: h_ij = λ_i·p_j (у пустой ёмкости дно выше линии)."""
+	return [[eq["lam"][i] * eq["p"][j] for j in range(3)] for i in range(3)]
+
+
+def diy_section(b: dict, harv: dict) -> list:
+	ml = L("мл", "ml")
+	cm = L("см", "cm")
+	dead = math.pi * (TUBE_D_MM / 20) ** 2 * TUBE_LEN_CM
+	h0 = rims(b)
+	h_harv = rims(harv)
+	sizes = [[L("Ёмкость", "Container"), L("Внутри: ширина × толщина × глубина, см", "Inside: width × thickness × depth, cm"),
+			  L("Вмещает, мл", "Holds, ml"), L("Край над линией, см", "Rim above line, cm"), L("Воды, мл", "Water, ml")]]
+	for i in range(3):
+		for j in range(3):
+			sizes.append([f"{CONS[i]} · {GOODS[j]}", f"{f(W0[i][j] * WIDTH_CM_PER_W, 0)} × {f(THICK_CM, 0)} × {f(D0[i][j], 0)}",
+						  f(W0[i][j] * D0[i][j] * ML_PER_UNIT, 0), f(h0[i][j]), f(b["x"][i][j] * ML_PER_UNIT, 0)])
+	s: list = [
+		PageBreak(),
+		p(L("8. Как собрать машину дома", "8. Building the machine at home"), h1),
+		p(L("Машину Фишера целиком — с плавающими цистернами, рычагами и кожаными мехами — дома не повторить. Но главное "
+			"в ней — сообщающиеся сосуды особой формы — собирается за выходные. Кнопка «Схема сборки» (V, L3 на геймпаде) "
+			"показывает стенд: девять ёмкостей на рейках с бегунками, ёмкости одного товара соединены снизу трубкой, "
+			"нулевая линия играет роль воды в баке. Работу рычагов и денежных отсеков берёт на себя программа: она "
+			"говорит, на какую высоту поставить край каждой ёмкости.",
+			"The whole Fisher machine — floating cisterns, levers and leather bellows — cannot be repeated at home. But its "
+			"heart — communicating vessels of a special shape — can be built in a weekend. The “Build scheme” button (V, L3 "
+			"on the gamepad) shows the rig: nine containers on rails with sliders, the containers of one good joined at the "
+			"bottom by a tube, a zero line playing the role of the tub water. The program takes over the levers and the money "
+			"compartments: it tells you how high to set the rim of each container.")),
+		Image(str(DOCS / f"diy_{LANG}.png"), width=170 * mm, height=170 * mm * 1080 / 1920),
+		CondPageBreak(60 * mm),
+		p(L("Почему это работает", "Why it works"), h2),
+		p(L("Вода в ёмкостях одного товара сама выравнивается по высоте — это закон сообщающихся сосудов. Если край ёмкости "
+			"на h см выше линии, а вода стоит на линии, то глубина воды под краем — h. По устройству ёмкости эта глубина и "
+			"есть предельная полезность: значит, вода разойдётся так, что у каждого u′(x) = h = λ·p — ровно условие Фишера. "
+			"Если дно ёмкости выше уровня воды, она пуста: покупатель этот товар не берёт (как III с товаром B).",
+			"Water in the containers of one good levels itself — the law of communicating vessels. If a rim is h cm above the "
+			"line and the water stands on the line, the depth of water below the rim is h. By the container's design this "
+			"depth is the marginal utility: so the water spreads so that everyone has u′(x) = h = λ·p — exactly Fisher's "
+			"condition. If a container's bottom is above the water level, it stays empty: the buyer does not take that good "
+			"(like III with good B).")),
+		table([
+			[L("Модель", "Model"), L("Стенд", "Rig")],
+			[L("1 единица товара", "1 unit of good"), f"{f(ML_PER_UNIT, 0)} {ml}"],
+			[L("1 единица предельной полезности", "1 unit of marginal utility"), f"1 {cm} " + L("глубины", "of depth")],
+			[L("Цистерна w × d", "Cistern w × d"), L(f"ёмкость {f(WIDTH_CM_PER_W, 0)}w × {f(THICK_CM, 0)} × d см",
+													 f"container {f(WIDTH_CM_PER_W, 0)}w × {f(THICK_CM, 0)} × d cm")],
+			[L("Вода в баке", "Tub water"), L("нулевая линия (нить, лазерный уровень)", "zero line (thread, laser level)")],
+			[L("Рычаги и меха", "Levers and bellows"), L("высоты краёв из программы", "rim heights from the program")],
+		], [90, 177]),
+		CondPageBreak(90 * mm),
+		p(L("Детали", "Parts"), h2),
+		table([
+			["№" if LANG == "ru" else "#", L("Деталь", "Part"), L("Шт.", "Qty"), L("Примечание", "Notes")],
+			["1", L("Щит: фанера 100 × 80 см на подставке", "Board: plywood 100 × 80 cm on a stand"), "1", L("вертикально, по уровню", "upright, levelled")],
+			["2", L("Прямоугольная ёмкость", "Rectangular container"), "9", L("оргстекло 3 мм на клею или пищевые контейнеры; размеры — в таблице ниже",
+																			   "3 mm acrylic glued, or food boxes; sizes in the table below")],
+			["3", L("Вертикальная рейка с бегунком и шкалой", "Vertical rail with slider and scale"), "9", L("мебельная направляющая или рейка + линейка", "drawer slide or a lath + ruler")],
+			["4", L("Зажим ёмкости на бегунке", "Container clamp on the slider"), "9", L("стопор-барашек, чтобы держал высоту", "a wing screw to hold the height")],
+			["5", L(f"Трубка силикон {f(TUBE_D_MM, 0)} мм, тройники, штуцеры в дно", f"Silicone tube {f(TUBE_D_MM, 0)} mm, tees, bottom fittings"),
+			 "3", L("по системе на товар, трубки — ниже всех доньев", "one system per good, tubes below all bottoms")],
+			["6", L("Кран для заливки (тройник с краником)", "Filling valve (tee with a tap)"), "3", L("через него заливают и сливают воду товара", "to fill and drain the good's water")],
+			["7", L("Нулевая линия", "Zero line"), "1", L("натянутая нить или лазерный уровень", "a stretched thread or a laser level")],
+		], [12, 95, 15, 145]),
+		Spacer(1, 2 * mm),
+		p(L("Ещё: три пищевых красителя (свой цвет каждому товару), мерный стакан, шприц 60 мл для точной доливки, "
+			"пузырьковый уровень, поддон под щит.",
+			"Also: three food colourings (one colour per good), a measuring cup, a 60 ml syringe for exact top-ups, a spirit "
+			"level, a tray under the board."), small),
+		CondPageBreak(110 * mm),
+		p(L("Размеры ёмкостей и настройка для равновесия по умолчанию", "Container sizes and the setting for the default equilibrium"), h2),
+		table(sizes, [30, 85, 35, 50, 40]),
+		Spacer(1, 2 * mm),
+		p(L(f"Ширина = {f(WIDTH_CM_PER_W, 0)}·w, толщина {f(THICK_CM, 0)} см: тогда на 1 см глубины приходится w единиц "
+			"товара, как у цистерны модели. Края — по значениям из программы (таблица справа на экране «Схема сборки»).",
+			f"Width = {f(WIDTH_CM_PER_W, 0)}·w, thickness {f(THICK_CM, 0)} cm: then 1 cm of depth holds w units of the good, as in "
+			"the model's cistern. Rims — from the program (the table on the right of the “Build scheme” screen)."), small),
+		CondPageBreak(100 * mm),
+		p(L("Сборка и первый опыт", "Assembly and first experiment"), h2),
+		*steps([
+			L("Закрепите 9 реек на щите тремя группами — по товарам A, B, C, в каждой группе ёмкости I, II, III. "
+			  "Выставьте щит по уровню и натяните нулевую линию поперёк всех реек.",
+			  "Fix the 9 rails on the board in three groups — goods A, B, C, each with containers I, II, III. Level the board "
+			  "and stretch the zero line across all rails."),
+			L("Вклейте штуцеры в дно ёмкостей и соедините ёмкости каждой группы трубками через тройник с краном. Трубки "
+			  "ведите ниже всех доньев — иначе в них останутся пузыри.",
+			  "Glue fittings into the container bottoms and join each group with tubes through a tee with a tap. Run the "
+			  "tubes below all the bottoms — otherwise bubbles stay in them."),
+			L("Выставьте края ёмкостей на высоты из таблицы выше (или с экрана программы после «Сброса»).",
+			  "Set the container rims to the heights from the table above (or from the program screen after Reset)."),
+			L(f"Залейте через краны подкрашенную воду: A — 400 мл, B — 350 мл, C — 450 мл (запасы × 10 мл) плюс "
+			  f"≈ {f(dead, 0)} мл на трубки каждой системы.",
+			  f"Pour coloured water through the taps: A 400 ml, B 350 ml, C 450 ml (supplies × 10 ml) plus ≈ {f(dead, 0)} ml "
+			  "for each system's tubes."),
+			L("Вода разойдётся сама: все поверхности встанут на нулевую линию, а объёмы в ёмкостях совпадут с таблицей. "
+			  "Ёмкость III · B останется пустой — её дно выше линии.",
+			  "The water spreads by itself: all surfaces come to the zero line, and the volumes match the table. Container "
+			  "III · B stays empty — its bottom is above the line."),
+		]),
+		CondPageBreak(100 * mm),
+		p(L("Опыты на стенде", "Experiments on the rig"), h2),
+		p(L("<b>Неравновесие.</b> Поднимите одну ёмкость на 2 см: вода из неё перетечёт к соседям по товару, поверхности "
+			"разойдутся с линией. Это и есть «неравновесие» на экране: при чужих ценах покупатель хочет купить другое "
+			"количество.",
+			"<b>Disequilibrium.</b> Raise one container by 2 cm: water flows from it to the others of the same good, the "
+			"surfaces leave the line. This is the on-screen “imbalance”: at the wrong prices a buyer wants a different "
+			"amount.")),
+		p(L("<b>Доходы ×2.</b> Нажмите кнопку в программе: цены удвоятся, а высоты краёв не изменятся — на стенде не "
+			"сдвинется ни капля. Предельные полезности те же, меняются только деньги.",
+			"<b>Incomes ×2.</b> Press the button in the program: prices double, but the rim heights do not change — not a "
+			"drop moves on the rig. Marginal utilities are the same, only money changes.")),
+		p(L(f"<b>Урожай C +50 %.</b> Долейте в систему C ещё 220 мл и переставьте края по новой таблице программы: у C края "
+			f"опустятся (у I: {f(h0[0][2])} → {f(h_harv[0][2])} см) — товар подешевел, его предельная полезность упала, и вода "
+			"снова выйдет на линию.",
+			f"<b>Harvest C +50%.</b> Add another 220 ml to system C and reset the rims from the program's new table: the C rims "
+			f"drop (for I: {f(h0[0][2])} → {f(h_harv[0][2])} cm) — the good got cheaper, its marginal utility fell, and the water "
+			"comes back to the line.")),
+		p(L("Точность стенда — несколько миллиметров: мешают мениск, неточные стенки и вода в трубках. Для показа "
+			"качественных эффектов этого достаточно.",
+			"The rig is accurate to a few millimetres: the meniscus, imperfect walls and water in the tubes get in the way. "
+			"That is enough to show the qualitative effects."), small),
+	]
 	return s
 
 
